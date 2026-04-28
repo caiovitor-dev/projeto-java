@@ -7,6 +7,7 @@ import com.caio.financial.entity.Transaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring",uses = UserMapper.class)

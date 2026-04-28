@@ -136,8 +136,16 @@ public class TransactionService {
     }
 
     public Page<Transaction> searchTransactions (int numberPage,int numberSize){
+
         Pageable page = PageRequest.of(numberPage,numberSize);
         return transactionRepository.findAll(page);
 
+    }
+
+
+    public Page<Transaction> findAccountTransaction(UUID accountId,int numberPage, int numberSize){
+
+        Pageable page= PageRequest.of(numberPage,numberSize);
+        return  transactionRepository.findByAccountId(accountId,page);
     }
 }

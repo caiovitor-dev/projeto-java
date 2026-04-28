@@ -2,6 +2,7 @@ package com.caio.financial.dto;
 
 import com.caio.financial.entity.Transaction;
 import com.caio.financial.entity.TypeAccount;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +15,6 @@ public record AccountTransactionResponseDTO(
         String cpf,
         TypeAccount typeAccount,
         LocalDateTime dateCreation,
-        List<TransactionResponseDTO> transactions
+       List<TransactionResponseDTO> transactions
 ) {
 }

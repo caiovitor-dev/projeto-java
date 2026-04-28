@@ -56,30 +56,24 @@ public class AccountController {
 
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/allTransaction")
     public ResponseEntity<AccountTransactionResponseDTO> getAllTransaction(
-            @RequestParam("id")String id,
+            @RequestParam("id")UUID id,
             @RequestParam("numberPage") int numberPage,
             @RequestParam("numberSize") int numberSize
     ){
 
-        return accountService.getAccount(UUID.fromString(id)).map(account -> {
+        return accountService.getAccount(id).map(account -> {
+
+            Page<Transaction> page = transactionService.findAccountTransaction(id, numberPage, numberSize);
+
+            List<TransactionResponseDTO> transaction =page.stream().map(transactionMapper::toDTO).toList();
 
 
-            Page<Transaction> list=transactionService.searchTransactions(numberPage,numberSize);
+            AccountTransactionResponseDTO response = accountMapper.response(account,transaction);
 
 
-
-            AccountTransactionResponseDTO dto = new AccountTransactionResponseDTO(
-                    account.getId(),
-                    account.getUser().getId(),
-                    account.getName(),
-                    account.getCpf(),
-                    account.getTypeAccount(),
-                    account.getDateCreation(),
-                    list);
-
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(response);
 
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }

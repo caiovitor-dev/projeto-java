@@ -1,13 +1,11 @@
 package com.caio.financial.mapper;
 
-import com.caio.financial.dto.AccountCreateDTO;
-import com.caio.financial.dto.AccountResponseDTO;
-import com.caio.financial.dto.AccountTransactionResponseDTO;
-import com.caio.financial.dto.UpdateAccountDTO;
+import com.caio.financial.dto.*;
 import com.caio.financial.entity.Account;
 import com.caio.financial.entity.User;
 import org.mapstruct.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring",uses = TransactionMapper.class)
@@ -23,6 +21,23 @@ public interface AccountMapper {
 
     public void updateAccount(UpdateAccountDTO dto , @MappingTarget Account account);
 
-    public AccountTransactionResponseDTO toResponse(Account account);
+
+    @Mapping(source = "account.id",target = "accountId")
+    @Mapping(source = "account.user.id",target = "userId")
+    public AccountTransactionResponseDTO toResponse(Account account, List<TransactionResponseDTO> listTransaction);
+
+
+    default AccountTransactionResponseDTO response(Account account,List<TransactionResponseDTO> listTransaction){
+
+         return new AccountTransactionResponseDTO(
+                 account.getId(),
+                 account.getUser().getId(),
+                 account.getName(),
+                 account.getCpf(),
+                 account.getTypeAccount(),
+                 account.getDateCreation(),
+                 listTransaction
+         );
+    }
 
 }

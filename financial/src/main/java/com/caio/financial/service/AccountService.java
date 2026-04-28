@@ -8,6 +8,8 @@ import com.caio.financial.repository.UserRepository;
 import com.caio.financial.security.SecurityService;
 import com.caio.financial.validator.AccountValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +54,11 @@ public class AccountService {
         if(!account.getUser().getId().equals(user.getId())){
             throw new RuntimeException("Conta não pertence ao usuário");
         }
+    }
+
+    public Page<Account> searchAccount (int numberPage, int numberSize){
+        Pageable page = PageRequest.of(numberPage,numberSize);
+        return accountRepository.findAll(page);
     }
 
 
