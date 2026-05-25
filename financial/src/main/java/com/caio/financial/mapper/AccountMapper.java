@@ -5,6 +5,7 @@ import com.caio.financial.entity.Account;
 import com.caio.financial.entity.User;
 import org.mapstruct.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +19,6 @@ public interface AccountMapper {
     public AccountResponseDTO toDTO(Account account);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-
     public void updateAccount(UpdateAccountDTO dto , @MappingTarget Account account);
 
 
@@ -26,6 +26,22 @@ public interface AccountMapper {
     @Mapping(source = "account.user.id",target = "userId")
     public AccountTransactionResponseDTO toResponse(Account account, List<TransactionResponseDTO> listTransaction);
 
+    @Mapping(source = "account.id",target = "accountId")
+    @Mapping(source = "account.user.id",target = "userId")
+    public AccountExpensesResponseDTO toReponse(Account account, BigDecimal totalExpense);
+
+
+
+//    default AccountExpensesResponseDTO reponse(Account account,BigDecimal totalExpense){
+//        return  new AccountExpensesResponseDTO(
+//                account.getId(),
+//                account.getUser().getId(),
+//                account.getName(),
+//                account.getCpf(),
+//                account.getTypeAccount(),
+//                totalExpense
+//        );
+//    }
 
     default AccountTransactionResponseDTO response(Account account,List<TransactionResponseDTO> listTransaction){
 

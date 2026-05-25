@@ -4,9 +4,7 @@ import com.caio.financial.dto.UpdateAccountDTO;
 import com.caio.financial.entity.*;
 import com.caio.financial.mapper.AccountMapper;
 import com.caio.financial.repository.AccountRepository;
-import com.caio.financial.repository.UserRepository;
 import com.caio.financial.security.SecurityService;
-import com.caio.financial.validator.AccountValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,17 +21,30 @@ import java.util.UUID;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final AccountValidator accountValidator;
     private final AccountMapper accountMapper;
     private final SecurityService securityService;
 
     public Account saveAccount(Account account){
 
-
         account.setUser(securityService.getLoggedUser());
 
-        accountValidator.validateAccount(account);
+        if(existsAccount(account)){
+            throw new RuntimeException("Já existe uma conta desse tipo");
+        }
         return accountRepository.save(account);
+    }
+
+    private boolean existsAccount(Account account){
+
+        Optional<Account> accountFound =
+                accountRepository.findByUserIdAndTypeAccount(account.getUser().getId(), account.getTypeAccount());
+
+        if(account.getId()==null){
+            return accountFound.isPresent();
+        }
+
+        return accountFound.isPresent() && !account.getId().equals(accountFound.get().getId());
+
     }
 
     public Optional<Account>getAccount(UUID accountId){
@@ -56,13 +67,10 @@ public class AccountService {
         }
     }
 
-    public Page<Account> searchAccount (int numberPage, int numberSize){
-        Pageable page = PageRequest.of(numberPage,numberSize);
+    public Page<Account> searchPaginated (int numberPage, int numberSize) {
+        Pageable page = PageRequest.of(numberPage, numberSize);
         return accountRepository.findAll(page);
     }
-
-
-
 
 
 }

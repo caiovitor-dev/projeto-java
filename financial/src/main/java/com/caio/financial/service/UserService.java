@@ -48,9 +48,11 @@ public class UserService {
 
     }
 
+
     public Optional<User> getUserById(UUID id){
         return userRepository.findById(id);
     }
+
     public void removeRoleFromUser(User user,UUID roleId){
 
         Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Id inválido"));

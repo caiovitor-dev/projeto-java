@@ -41,7 +41,7 @@ public class Account {
     private LocalDateTime dateUpdate;
 
     @OneToMany(mappedBy = "account")
-    private List<Transaction> transactions ;
+    private List<Transaction> transactions;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

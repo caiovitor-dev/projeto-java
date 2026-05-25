@@ -18,7 +18,7 @@ public class RoleService {
         return roleRepository.save(role);
     }
     public Optional<Role> findRoleById(UUID id){
-      return   roleRepository.findById(id);
+      return  roleRepository.findById(id);
     }
     public void deleteRole(Role role){
          roleRepository.delete(role);

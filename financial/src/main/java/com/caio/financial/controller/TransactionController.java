@@ -27,7 +27,7 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<Void> createTransaction(@RequestBody TransactionCreateDTO dto){
         Transaction transaction = transactionMapper.toEntity(dto);
-        transactionService.saveTransaction(transaction,dto.categoryId(),dto.accountId());
+        transactionService.createTransaction(transaction,dto.categoryId(),dto.accountId());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -38,7 +38,7 @@ public class TransactionController {
         return ResponseEntity.created(location).build();
     }
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponseDTO> getTransaction(@PathVariable String id){
+    public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable String id){
 
         return transactionService.findTransactionById(UUID.fromString(id)).map(transaction -> {
             TransactionResponseDTO dto = transactionMapper.toDTO(transaction);
@@ -63,15 +63,15 @@ public class TransactionController {
     public ResponseEntity<?> updateTransaction (@PathVariable String id, @RequestBody UpdateTransactionDTO dto){
 
         return transactionService.findTransactionById(UUID.fromString(id)).map(transaction -> {
-            Transaction entity = transactionMapper.toEntity(dto);
+            Transaction updateTransaction = transactionMapper.toEntity(dto);
 
-            BigDecimal transactionValueOld= transaction.getValue();
-            TypeCategory typeCategory= transaction.getCategory().getTypeCategory();
+            BigDecimal previousValue= transaction.getValue();
+            TypeCategory previousTypeCategory= transaction.getCategory().getTypeCategory();
 
-            transaction.setValue(entity.getValue());
-            transaction.setDescription(entity.getDescription());
+            transaction.setValue(updateTransaction.getValue());
+            transaction.setDescription(updateTransaction.getDescription());
 
-            transactionService.updateCompleteTransaction(transaction,transactionValueOld,dto.categoryId(),typeCategory);
+            transactionService.updateTransaction(transaction,previousValue,dto.categoryId(),previousTypeCategory);
 
             return ResponseEntity.noContent().build();
 

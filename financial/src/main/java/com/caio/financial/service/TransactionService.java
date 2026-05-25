@@ -5,6 +5,7 @@ import com.caio.financial.repository.AccountRepository;
 import com.caio.financial.repository.CategoryRepository;
 import com.caio.financial.repository.TransactionRepository;
 import com.caio.financial.security.SecurityService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,7 +33,8 @@ public class TransactionService {
         return  transactionRepository.findById(id);
     }
 
-    public Transaction saveTransaction(Transaction transaction, UUID categoryId, UUID accountId){
+    @Transactional
+    public Transaction createTransaction(Transaction transaction, UUID categoryId, UUID accountId){
         User loggedUser = securityService.getLoggedUser();
 
         Account account = accountRepository.findById(accountId).
@@ -57,6 +60,9 @@ public class TransactionService {
         BigDecimal currentBalance = account.getCurrentBalance();
 
         if(TypeCategory.RECEITA.equals(category)){
+            if (currentBalance.compareTo(transactionValue) < 0) {
+                throw  new RuntimeException("ERRO");
+            }
             account.setCurrentBalance(currentBalance.add(transactionValue));
         }
         else {
@@ -65,7 +71,9 @@ public class TransactionService {
 
     }
 
-    public void updateCompleteTransaction(Transaction transaction,BigDecimal transactionValueOld,UUID categoryId,TypeCategory typeCategoryOld)
+
+    @Transactional
+    public void updateTransaction(Transaction transaction,BigDecimal transactionValueOld,UUID categoryId,TypeCategory typeCategoryOld)
     {
         User loggedUser = securityService.getLoggedUser();
 
@@ -89,6 +97,7 @@ public class TransactionService {
         transactionRepository.save(transaction);
 
     }
+
     private void adjustAccountBalance(Account account, BigDecimal transactionValue,BigDecimal transactionValueOld, Category category,TypeCategory typeCategoryOld) {
 
         BigDecimal accountBalance = account.getCurrentBalance();
@@ -110,8 +119,8 @@ public class TransactionService {
         account.setCurrentBalance(accountBalance);
     }
 
+    @Transactional
     public void removeTransaction(Transaction transaction){
-        transactionRepository.delete(transaction);
 
         Account account= transaction.getAccount();
 
@@ -119,6 +128,7 @@ public class TransactionService {
 
         accountRepository.save(account);
 
+        transactionRepository.delete(transaction);
 
     }
 
@@ -135,17 +145,27 @@ public class TransactionService {
         account.setCurrentBalance(accountBalance);
     }
 
-    public Page<Transaction> searchTransactions (int numberPage,int numberSize){
 
-        Pageable page = PageRequest.of(numberPage,numberSize);
-        return transactionRepository.findAll(page);
-
-    }
-
-
-    public Page<Transaction> findAccountTransaction(UUID accountId,int numberPage, int numberSize){
+    public Page<Transaction> findAllAccountTransactions(UUID accountId,int numberPage, int numberSize){
 
         Pageable page= PageRequest.of(numberPage,numberSize);
         return  transactionRepository.findByAccountId(accountId,page);
     }
+
+    public BigDecimal geAllTotalExpenses(UUID accountId){
+
+        List<Transaction> listExpense = transactionRepository.
+                findAllByAccountId(accountId);
+
+        BigDecimal value=BigDecimal.ZERO;
+
+       for(Transaction transaction:listExpense){
+          if(transaction.getCategory().getTypeCategory().equals(TypeCategory.DESPESA)){
+              value =  value.add(transaction.getValue());
+          }
+       }
+        return value;
+    }
+
+
 }

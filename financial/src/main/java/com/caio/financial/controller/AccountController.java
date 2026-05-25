@@ -56,8 +56,8 @@ public class AccountController {
 
     }
 
-    @GetMapping("/allTransaction")
-    public ResponseEntity<AccountTransactionResponseDTO> getAllTransaction(
+    @GetMapping("/account/{id}/transaction")
+    public ResponseEntity<AccountTransactionResponseDTO> getTransactionsByAccount(
             @RequestParam("id")UUID id,
             @RequestParam("numberPage") int numberPage,
             @RequestParam("numberSize") int numberSize
@@ -65,15 +65,33 @@ public class AccountController {
 
         return accountService.getAccount(id).map(account -> {
 
-            Page<Transaction> page = transactionService.findAccountTransaction(id, numberPage, numberSize);
+            Page<Transaction> page = transactionService.findAllAccountTransactions(id, numberPage, numberSize);
 
             List<TransactionResponseDTO> transaction =page.stream().map(transactionMapper::toDTO).toList();
 
-
             AccountTransactionResponseDTO response = accountMapper.response(account,transaction);
-
-
             return ResponseEntity.ok(response);
+
+        }).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/account/{id}/expenses")
+    public ResponseEntity<AccountExpensesResponseDTO> getTotalExpensesByAccount(@PathVariable UUID id){
+        return accountService.getAccount(id).map(account -> {
+
+            BigDecimal totalExpense = transactionService.geAllTotalExpenses(id);
+
+            AccountExpensesResponseDTO accountExpensesResponseDTO = new AccountExpensesResponseDTO(
+                    account.getId(),
+                    account.getUser().getId(),
+                    account.getName(),
+                    account.getCpf(),
+                    account.getTypeAccount(),
+                    totalExpense
+            );
+
+
+            return ResponseEntity.ok(accountExpensesResponseDTO);
 
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
